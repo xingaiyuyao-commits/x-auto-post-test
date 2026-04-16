@@ -2,7 +2,7 @@ name: Auto Post to X
 
 on:
   schedule:
-    - cron: "0 11 15 4 *"
+    - cron: "45 10 * * *"
   workflow_dispatch:
 
 jobs:
