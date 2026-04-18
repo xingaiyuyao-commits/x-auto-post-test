@@ -1,0 +1,75 @@
+import os
+import time
+import urllib.request
+import urllib.parse
+import json
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+
+JST = timezone(timedelta(hours=9))
+START_DATE = datetime(2026, 4, 15, tzinfo=JST).date()
+
+today = datetime.now(JST).date()
+day_num = (today - START_DATE).days + 1
+
+print(f"Today is Day {day_num}")
+
+if not (1 <= day_num <= 31):
+    print("31日間の投稿期間外です。スキップします。")
+    exit(0)
+
+day_str = f"{day_num:02d}"
+text_file = Path(f"posts/day{day_str}.txt")
+reply_file = Path(f"posts/day{day_str}_reply.txt")
+
+if not text_file.exists():
+    print(f"投稿ファイルが見つかりません: {text_file}")
+    exit(1)
+
+TEXT = text_file.read_text(encoding="utf-8").strip()
+
+ACCESS_TOKEN = os.environ["THREADS_ACCESS_TOKEN"]
+USER_ID = os.environ["THREADS_USER_ID"]
+API_BASE = "https://graph.threads.net/v1.0"
+
+
+def api_request(url, params=None, method="POST"):
+    if params:
+        data = urllib.parse.urlencode(params).encode()
+    else:
+        data = None
+    req = urllib.request.Request(url, data=data, method=method)
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read().decode())
+
+
+def create_post(text, reply_to_id=None):
+    params = {
+        "media_type": "TEXT",
+        "text": text,
+        "access_token": ACCESS_TOKEN,
+    }
+    if reply_to_id:
+        params["reply_to_id"] = reply_to_id
+
+    result = api_request(f"{API_BASE}/{USER_ID}/threads", params)
+    creation_id = result["id"]
+    print(f"コンテナ作成完了: {creation_id}")
+
+    time.sleep(5)
+
+    publish_result = api_request(
+        f"{API_BASE}/{USER_ID}/threads_publish",
+        {"creation_id": creation_id, "access_token": ACCESS_TOKEN},
+    )
+    post_id = publish_result["id"]
+    return post_id
+
+
+post_id = create_post(TEXT)
+print(f"Day {day_num} Threads投稿完了。Post ID: {post_id}")
+
+if reply_file.exists():
+    REPLY_TEXT = reply_file.read_text(encoding="utf-8").strip()
+    reply_id = create_post(REPLY_TEXT, reply_to_id=post_id)
+    print(f"リプライ投稿完了。Reply ID: {reply_id}")
