@@ -20,7 +20,18 @@ if not (1 <= day_num <= 31):
 
 day_str = f"{day_num:02d}"
 text_file = Path(f"posts/day{day_str}.txt")
-reply_file = Path(f"posts/day{day_str}_reply.txt")
+
+reply_files = []
+first_reply = Path(f"posts/day{day_str}_reply.txt")
+if first_reply.exists():
+    reply_files.append(first_reply)
+    n = 2
+    while True:
+        pn = Path(f"posts/day{day_str}_reply{n}.txt")
+        if not pn.exists():
+            break
+        reply_files.append(pn)
+        n += 1
 
 if not text_file.exists():
     print(f"投稿ファイルが見つかりません: {text_file}")
@@ -69,7 +80,8 @@ def create_post(text, reply_to_id=None):
 post_id = create_post(TEXT)
 print(f"Day {day_num} Threads投稿完了。Post ID: {post_id}")
 
-if reply_file.exists():
-    REPLY_TEXT = reply_file.read_text(encoding="utf-8").strip()
-    reply_id = create_post(REPLY_TEXT, reply_to_id=post_id)
-    print(f"リプライ投稿完了。Reply ID: {reply_id}")
+last_id = post_id
+for i, rf in enumerate(reply_files, 1):
+    REPLY_TEXT = rf.read_text(encoding="utf-8").strip()
+    last_id = create_post(REPLY_TEXT, reply_to_id=last_id)
+    print(f"リプライ{i} 投稿完了。Reply ID: {last_id}")

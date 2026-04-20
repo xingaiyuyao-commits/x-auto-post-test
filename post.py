@@ -17,9 +17,20 @@ if not (1 <= day_num <= 31):
 
 day_str = f"{day_num:02d}"
 text_file = Path(f"posts/day{day_str}.txt")
-reply_file = Path(f"posts/day{day_str}_reply.txt")
 image_file_jpg = Path(f"images/day{day_str}.jpg")
 image_file_png = Path(f"images/day{day_str}.png")
+
+reply_files = []
+first_reply = Path(f"posts/day{day_str}_reply.txt")
+if first_reply.exists():
+    reply_files.append(first_reply)
+    n = 2
+    while True:
+        pn = Path(f"posts/day{day_str}_reply{n}.txt")
+        if not pn.exists():
+            break
+        reply_files.append(pn)
+        n += 1
 
 if not text_file.exists():
     print(f"投稿ファイルが見つかりません: {text_file}")
@@ -61,11 +72,13 @@ tweet = client.create_tweet(text=TEXT, media_ids=media_ids)
 tweet_id = tweet.data["id"]
 print(f"Day {day_num} 投稿完了。Tweet ID: {tweet_id}")
 
-# リプライがあれば投稿
-if reply_file.exists():
-    REPLY_TEXT = reply_file.read_text(encoding="utf-8").strip()
+# リプライがあれば順番に投稿（スレッド化）
+last_id = tweet_id
+for i, rf in enumerate(reply_files, 1):
+    REPLY_TEXT = rf.read_text(encoding="utf-8").strip()
     reply = client.create_tweet(
         text=REPLY_TEXT,
-        in_reply_to_tweet_id=tweet_id,
+        in_reply_to_tweet_id=last_id,
     )
-    print(f"リプライ投稿完了。Reply ID: {reply.data['id']}")
+    last_id = reply.data["id"]
+    print(f"リプライ{i} 投稿完了。Reply ID: {last_id}")

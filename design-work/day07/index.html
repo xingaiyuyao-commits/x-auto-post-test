@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>TOEIC Time Allocation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "ヒラギノ角ゴ ProN", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "メイリオ", Meiryo, sans-serif;
+    background: #e9e4da;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    zoom: 0.55;
+  }
+
+  .card {
+    width: 1200px;
+    background: #fdfaf5;
+    padding: 72px 64px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .table {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(8,19,26,0.06);
+    padding: 16px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr 1fr;
+    align-items: center;
+  }
+
+  .row.header-row {
+    padding: 32px 0 28px;
+    border-bottom: 1.5px solid rgba(8,19,26,0.08);
+  }
+
+  .row.data-row {
+    padding: 40px 0;
+    border-bottom: 1px solid rgba(8,19,26,0.06);
+  }
+
+  .row.data-row:last-child {
+    border-bottom: none;
+  }
+
+  .cell {
+    text-align: center;
+    font-family: "Inter", sans-serif;
+  }
+
+  .cell.label {
+    font-size: 28px;
+    font-weight: 700;
+    color: #08131a;
+    text-align: left;
+    padding-left: 48px;
+    font-family: "ヒラギノ角ゴ ProN", "Noto Sans JP", sans-serif;
+  }
+
+  .col-head {
+    font-size: 20px;
+    font-weight: 600;
+    color: rgba(8,19,26,0.7);
+    text-align: center;
+    font-family: "ヒラギノ角ゴ ProN", "Noto Sans JP", sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  .col-head.big {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: "Inter", "ヒラギノ角ゴ ProN", sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .col-head .ref-inline {
+    font-size: 19px;
+    font-weight: 500;
+    color: rgba(8,19,26,0.45);
+    margin-left: 6px;
+    letter-spacing: 0;
+  }
+
+  .col-head.highlight-col {
+    color: #d97757;
+  }
+
+  .col-head.highlight-col .ref-inline {
+    color: #d97757;
+    opacity: 0.75;
+  }
+
+  .number {
+    font-size: 56px;
+    font-weight: 700;
+    color: #08131a;
+    letter-spacing: -0.02em;
+  }
+
+  .number .unit {
+    font-size: 26px;
+    font-weight: 600;
+    color: rgba(8,19,26,0.55);
+    margin-left: 2px;
+    letter-spacing: 0;
+  }
+
+  .number.reference {
+    color: rgba(8,19,26,0.55);
+    font-weight: 600;
+  }
+
+  .number.reference .unit {
+    color: rgba(8,19,26,0.4);
+  }
+
+  .highlight-cell {
+    position: relative;
+  }
+
+  .highlight-cell .number {
+    color: #d97757;
+    position: relative;
+    display: inline-block;
+    padding: 10px 24px;
+    background: #f9ebe1;
+    border-radius: 14px;
+  }
+
+  .highlight-cell .number .unit {
+    color: #d97757;
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="table">
+      <div class="row header-row">
+        <div class="cell"></div>
+        <div class="col-head">参考書推奨</div>
+        <div class="col-head big">840点<span class="ref-inline">取得時</span></div>
+        <div class="col-head big highlight-col">960点<span class="ref-inline">取得時</span></div>
+      </div>
+
+      <div class="row data-row">
+        <div class="cell label">Part 5</div>
+        <div class="cell"><span class="number reference">15<span class="unit">分</span></span></div>
+        <div class="cell"><span class="number">8<span class="unit">分</span></span></div>
+        <div class="cell"><span class="number">9<span class="unit">分</span></span></div>
+      </div>
+
+      <div class="row data-row">
+        <div class="cell label">Part 6</div>
+        <div class="cell"><span class="number reference">10<span class="unit">分</span></span></div>
+        <div class="cell"><span class="number">10<span class="unit">分</span></span></div>
+        <div class="cell highlight-cell"><span class="number">6<span class="unit">分</span></span></div>
+      </div>
+
+      <div class="row data-row">
+        <div class="cell label">Part 7</div>
+        <div class="cell"><span class="number reference">50<span class="unit">分</span></span></div>
+        <div class="cell"><span class="number">57<span class="unit">分</span></span></div>
+        <div class="cell"><span class="number">50<span class="unit">分</span></span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
