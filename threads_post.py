@@ -60,8 +60,13 @@ def api_request(url, params=None, method="POST"):
     else:
         data = None
     req = urllib.request.Request(url, data=data, method=method)
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode(errors="replace")
+        print(f"HTTPError {e.code}: {body}")
+        raise
 
 
 def create_post(text, reply_to_id=None, image_url=None):
