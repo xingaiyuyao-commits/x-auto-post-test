@@ -20,6 +20,16 @@ if not (1 <= day_num <= 31):
 
 day_str = f"{day_num:02d}"
 text_file = Path(f"posts/day{day_str}.txt")
+image_file_jpg = Path(f"images/day{day_str}.jpg")
+image_file_png = Path(f"images/day{day_str}.png")
+
+REPO_RAW_BASE = "https://raw.githubusercontent.com/xingaiyuyao-commits/x-auto-post-test/main"
+
+image_url = None
+if image_file_jpg.exists():
+    image_url = f"{REPO_RAW_BASE}/images/day{day_str}.jpg"
+elif image_file_png.exists():
+    image_url = f"{REPO_RAW_BASE}/images/day{day_str}.png"
 
 reply_files = []
 first_reply = Path(f"posts/day{day_str}_reply.txt")
@@ -54,12 +64,16 @@ def api_request(url, params=None, method="POST"):
         return json.loads(resp.read().decode())
 
 
-def create_post(text, reply_to_id=None):
+def create_post(text, reply_to_id=None, image_url=None):
     params = {
-        "media_type": "TEXT",
         "text": text,
         "access_token": ACCESS_TOKEN,
     }
+    if image_url:
+        params["media_type"] = "IMAGE"
+        params["image_url"] = image_url
+    else:
+        params["media_type"] = "TEXT"
     if reply_to_id:
         params["reply_to_id"] = reply_to_id
 
@@ -77,8 +91,8 @@ def create_post(text, reply_to_id=None):
     return post_id
 
 
-post_id = create_post(TEXT)
-print(f"Day {day_num} Threads投稿完了。Post ID: {post_id}")
+post_id = create_post(TEXT, image_url=image_url)
+print(f"Day {day_num} Threads投稿完了。Post ID: {post_id}（画像: {image_url or 'なし'}）")
 
 last_id = post_id
 for i, rf in enumerate(reply_files, 1):
