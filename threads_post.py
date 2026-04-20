@@ -23,7 +23,7 @@ text_file = Path(f"posts/day{day_str}.txt")
 image_file_jpg = Path(f"images/day{day_str}.jpg")
 image_file_png = Path(f"images/day{day_str}.png")
 
-REPO_RAW_BASE = "https://cdn.jsdelivr.net/gh/xingaiyuyao-commits/x-auto-post-test@main"
+REPO_RAW_BASE = "https://cdn.statically.io/gh/xingaiyuyao-commits/x-auto-post-test/main"
 
 image_url = None
 if image_file_jpg.exists():
