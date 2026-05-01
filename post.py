@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 JST = timezone(timedelta(hours=9))
-START_DATE = datetime(2026, 4, 15, tzinfo=JST).date()  # Day 1 の日付
+START_DATE = datetime(2026, 4, 17, tzinfo=JST).date()  # Day 1 の日付
 
 today = datetime.now(JST).date()
 day_num = (today - START_DATE).days + 1
