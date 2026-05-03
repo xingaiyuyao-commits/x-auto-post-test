@@ -33,8 +33,8 @@ if first_reply.exists():
         n += 1
 
 if not text_file.exists():
-    print(f"投稿ファイルが見つかりません: {text_file}")
-    exit(1)
+    print(f"投稿ファイルが見つかりません: {text_file}（スキップ）")
+    exit(0)
 
 TEXT = text_file.read_text(encoding="utf-8").strip()
 
