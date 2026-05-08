@@ -82,6 +82,23 @@ def api_request(url, params=None, method="POST"):
         raise
 
 
+def wait_for_container_ready(container_id, max_wait_sec=90):
+    url = f"{API_BASE}/{container_id}?fields=status,error_message&access_token={ACCESS_TOKEN}"
+    waited = 0
+    while waited < max_wait_sec:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode())
+        status = data.get("status")
+        if status == "FINISHED":
+            return
+        if status in ("ERROR", "EXPIRED"):
+            raise RuntimeError(f"Container {container_id} status={status}: {data.get('error_message')}")
+        time.sleep(3)
+        waited += 3
+    raise TimeoutError(f"Container {container_id} not ready after {max_wait_sec}s")
+
+
 def create_post(text, reply_to_id=None, image_urls=None):
     image_urls = image_urls or []
 
@@ -101,6 +118,11 @@ def create_post(text, reply_to_id=None, image_urls=None):
             children.append(child["id"])
             print(f"カルーセル子コンテナ作成: {child['id']} ({url})")
 
+        # 全子コンテナの処理完了を待機
+        for cid in children:
+            wait_for_container_ready(cid)
+            print(f"子コンテナ {cid} 処理完了")
+
         params = {
             "media_type": "CAROUSEL",
             "children": ",".join(children),
@@ -112,6 +134,7 @@ def create_post(text, reply_to_id=None, image_urls=None):
         result = api_request(f"{API_BASE}/{USER_ID}/threads", params)
         creation_id = result["id"]
         print(f"カルーセル親コンテナ作成: {creation_id}")
+        wait_for_container_ready(creation_id)
     else:
         params = {
             "text": text,
