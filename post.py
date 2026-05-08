@@ -20,6 +20,18 @@ text_file = Path(f"posts/day{day_str}.txt")
 image_file_jpg = Path(f"images/day{day_str}.jpg")
 image_file_png = Path(f"images/day{day_str}.png")
 
+# 複数画像（_1, _2, _3, _4）を優先
+image_paths = []
+for n in range(1, 5):
+    p_jpg = Path(f"images/day{day_str}_{n}.jpg")
+    p_png = Path(f"images/day{day_str}_{n}.png")
+    if p_jpg.exists():
+        image_paths.append(p_jpg)
+    elif p_png.exists():
+        image_paths.append(p_png)
+    else:
+        break
+
 reply_files = []
 first_reply = Path(f"posts/day{day_str}_reply.txt")
 if first_reply.exists():
@@ -38,12 +50,12 @@ if not text_file.exists():
 
 TEXT = text_file.read_text(encoding="utf-8").strip()
 
-# 画像ファイルの確認
-image_path = None
-if image_file_jpg.exists():
-    image_path = image_file_jpg
-elif image_file_png.exists():
-    image_path = image_file_png
+# 単数画像へのフォールバック（_1〜_4 が無ければ）
+if not image_paths:
+    if image_file_jpg.exists():
+        image_paths.append(image_file_jpg)
+    elif image_file_png.exists():
+        image_paths.append(image_file_png)
 
 # Tweepy クライアント（v2）
 client = tweepy.Client(
@@ -55,7 +67,7 @@ client = tweepy.Client(
 
 # 画像アップロード（v1.1 API が必要）
 media_ids = None
-if image_path:
+if image_paths:
     auth = tweepy.OAuth1UserHandler(
         os.environ["X_API_KEY"],
         os.environ["X_API_KEY_SECRET"],
@@ -63,9 +75,11 @@ if image_path:
         os.environ["X_ACCESS_TOKEN_SECRET"],
     )
     api_v1 = tweepy.API(auth)
-    media = api_v1.media_upload(filename=str(image_path))
-    media_ids = [media.media_id]
-    print(f"画像アップロード完了: {image_path} (media_id: {media.media_id})")
+    media_ids = []
+    for p in image_paths:
+        media = api_v1.media_upload(filename=str(p))
+        media_ids.append(media.media_id)
+        print(f"画像アップロード完了: {p} (media_id: {media.media_id})")
 
 # 本文を投稿
 tweet = client.create_tweet(text=TEXT, media_ids=media_ids)

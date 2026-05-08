@@ -25,11 +25,24 @@ image_file_png = Path(f"images/day{day_str}.png")
 
 REPO_RAW_BASE = "https://raw.githubusercontent.com/xingaiyuyao-commits/x-auto-post-test/main"
 
-image_url = None
-if image_file_jpg.exists():
-    image_url = f"{REPO_RAW_BASE}/images/day{day_str}.jpg"
-elif image_file_png.exists():
-    image_url = f"{REPO_RAW_BASE}/images/day{day_str}.png"
+# 複数画像（_1〜_N）を優先
+image_urls = []
+for n in range(1, 11):
+    p_jpg = Path(f"images/day{day_str}_{n}.jpg")
+    p_png = Path(f"images/day{day_str}_{n}.png")
+    if p_jpg.exists():
+        image_urls.append(f"{REPO_RAW_BASE}/images/day{day_str}_{n}.jpg")
+    elif p_png.exists():
+        image_urls.append(f"{REPO_RAW_BASE}/images/day{day_str}_{n}.png")
+    else:
+        break
+
+# 単数画像へのフォールバック
+if not image_urls:
+    if image_file_jpg.exists():
+        image_urls.append(f"{REPO_RAW_BASE}/images/day{day_str}.jpg")
+    elif image_file_png.exists():
+        image_urls.append(f"{REPO_RAW_BASE}/images/day{day_str}.png")
 
 reply_files = []
 first_reply = Path(f"posts/day{day_str}_reply.txt")
@@ -69,22 +82,52 @@ def api_request(url, params=None, method="POST"):
         raise
 
 
-def create_post(text, reply_to_id=None, image_url=None):
-    params = {
-        "text": text,
-        "access_token": ACCESS_TOKEN,
-    }
-    if image_url:
-        params["media_type"] = "IMAGE"
-        params["image_url"] = image_url
-    else:
-        params["media_type"] = "TEXT"
-    if reply_to_id:
-        params["reply_to_id"] = reply_to_id
+def create_post(text, reply_to_id=None, image_urls=None):
+    image_urls = image_urls or []
 
-    result = api_request(f"{API_BASE}/{USER_ID}/threads", params)
-    creation_id = result["id"]
-    print(f"コンテナ作成完了: {creation_id}")
+    if len(image_urls) >= 2:
+        # カルーセル投稿: 各画像で is_carousel_item コンテナを作成 → CAROUSEL でまとめる
+        children = []
+        for url in image_urls:
+            child = api_request(
+                f"{API_BASE}/{USER_ID}/threads",
+                {
+                    "media_type": "IMAGE",
+                    "image_url": url,
+                    "is_carousel_item": "true",
+                    "access_token": ACCESS_TOKEN,
+                },
+            )
+            children.append(child["id"])
+            print(f"カルーセル子コンテナ作成: {child['id']} ({url})")
+
+        params = {
+            "media_type": "CAROUSEL",
+            "children": ",".join(children),
+            "text": text,
+            "access_token": ACCESS_TOKEN,
+        }
+        if reply_to_id:
+            params["reply_to_id"] = reply_to_id
+        result = api_request(f"{API_BASE}/{USER_ID}/threads", params)
+        creation_id = result["id"]
+        print(f"カルーセル親コンテナ作成: {creation_id}")
+    else:
+        params = {
+            "text": text,
+            "access_token": ACCESS_TOKEN,
+        }
+        if image_urls:
+            params["media_type"] = "IMAGE"
+            params["image_url"] = image_urls[0]
+        else:
+            params["media_type"] = "TEXT"
+        if reply_to_id:
+            params["reply_to_id"] = reply_to_id
+
+        result = api_request(f"{API_BASE}/{USER_ID}/threads", params)
+        creation_id = result["id"]
+        print(f"コンテナ作成完了: {creation_id}")
 
     time.sleep(5)
 
@@ -96,8 +139,8 @@ def create_post(text, reply_to_id=None, image_url=None):
     return post_id
 
 
-post_id = create_post(TEXT, image_url=image_url)
-print(f"Day {day_num} Threads投稿完了。Post ID: {post_id}（画像: {image_url or 'なし'}）")
+post_id = create_post(TEXT, image_urls=image_urls)
+print(f"Day {day_num} Threads投稿完了。Post ID: {post_id}（画像: {len(image_urls)}枚）")
 
 last_id = post_id
 for i, rf in enumerate(reply_files, 1):
